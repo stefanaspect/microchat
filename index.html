@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <title>MicroChat</title>
+    <script language="javascript">
+
+var queue = [],
+    curtimeout = null;
+
+function updatewindow() {
+  var reqs = new XMLHttpRequest();
+  reqs.open('GET', '//' + location.host + '/message', true);
+  reqs.readystatechange = function() { if(reqs.readyState == 4) { revchat(JSON.parse(reqs.responseText)); curtimeout = setTimeout("updatewindow();", 3000); } };
+  reqs.send(null);
+}
+
+function sendchat() {
+  var user = document.getElementById('user').value,
+      mesg = document.getElementById('mesg').value,
+      code = document.getElementById('code').value,
+      reqs = new XMLHttpRequest();
+
+  if(user == '') {
+    alert('username must not be blank!');
+  } else if(mesg == '' && code == '') {
+    alert('you must supply either a message, a code snippet, or both');
+  }
+  reqs.open('POST', "//" + location.host + '/message', true);
+  reqs.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  reqs.onreadystatechange = function() { if(reqs.readyState == 4) { recvchat(JSON.parse(reqs.responseText)); curtimeout = setTimeout("updatewindow();", 3000); }};
+  reqs.send(JSON.stringify({'user': user, 'mesg': mesg, 'code': code}));
+  return false;
+}
+
+function recvchat(x) {
+  var chat = document.getElementById("chatwindow"), curv = None;
+
+  curv = chat.innerHTML;
+
+  alert("x == " + x);
+  alert(chat.value);
+  
+  chat.value += x;
+  clearTimeout(curtimeout);
+}
+
+window.onload = function() { curtimeout = setTimeout(updatewindow, 3000) };
+    </script>
+  </head>
+  <body>
+    <label for="user">Username: </label>
+    <input type="text" name="user" id="user">
+    <br>
+    <textarea rows=15 cols=125 name="chatwindow" id="chatwindow"></textarea>
+    <label for="mesg">Message:</label>
+    <br>
+    <textarea rows=5 cols=125 name="mesg" id="mesg"></textarea>
+    <br>
+    <textarea rows=5 cols=125 name="code" id="code"></textarea>
+    <br>
+    <button onclick="sendchat();">Chat</button>
+  </body>
+</html>
