@@ -4,6 +4,7 @@ import time
 
 queue = []
 tmpl = None
+MAX = 10
 
 @route('/')
 def index():
@@ -21,13 +22,13 @@ def message():
         ts = time.time()
         date = time.ctime()
         user = data['user']
-        msg = data.get('msg')
+        mesg = data.get('mesg')
         code = data.get('code')
-        # only store the last 50 items in the queue...
-        if len(queue) > 50:
-            tmp = len(queue) - 50
+        # only store the last MAX items in the queue...
+        if len(queue) > MAX:
+            tmp = len(queue) - MAX
             queue = queue[tmp:len(queue)]
-        queue.append(dict(user=user, ts=ts, date=date, msg=msg, code=code))
+        queue.append(dict(user=user, ts=ts, date=date, mesg=mesg, code=code))
         return {"queue": queue}
     else:
         return {"queue": queue}

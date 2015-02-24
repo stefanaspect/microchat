@@ -2,15 +2,18 @@
   <head>
     <title>MicroChat</title>
     <script language="javascript">
+"use strict;";
 
 var queue = [],
-    curtimeout = null;
+    curtimeout = null,
+    postedids = [];
 
 function updatewindow() {
   var reqs = new XMLHttpRequest();
   reqs.open('GET', '//' + location.host + '/message', true);
-  reqs.readystatechange = function() { if(reqs.readyState == 4) { revchat(JSON.parse(reqs.responseText)); curtimeout = setTimeout("updatewindow();", 3000); } };
+  reqs.onreadystatechange = function() { if(reqs.readyState == 4) { recvchat(JSON.parse(reqs.responseText)); } };
   reqs.send(null);
+  setTimeout(updatewindow, 10000);
 }
 
 function sendchat() {
@@ -26,31 +29,54 @@ function sendchat() {
   }
   reqs.open('POST', "//" + location.host + '/message', true);
   reqs.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  reqs.onreadystatechange = function() { if(reqs.readyState == 4) { recvchat(JSON.parse(reqs.responseText)); curtimeout = setTimeout("updatewindow();", 3000); }};
+  reqs.onreadystatechange = function() { if(reqs.readyState == 4) { recvchat(JSON.parse(reqs.responseText));}};
   reqs.send(JSON.stringify({'user': user, 'mesg': mesg, 'code': code}));
+  document.getElementById('mesg').value = "";
+  document.getElementById('code').value = "";
   return false;
 }
 
 function recvchat(x) {
-  var chat = document.getElementById("chatwindow"), curv = None;
-
-  curv = chat.innerHTML;
-
-  alert("x == " + x);
-  alert(chat.value);
-  
-  chat.value += x;
-  clearTimeout(curtimeout);
+  console.log(Object.keys(x));
+  for(var s in x['queue']){
+    console.log(s);
+    var chat = document.getElementById("chatwindow"),
+        curv = x['queue'][s];
+        tmpl = document.createElement("div"),
+        user = document.createElement("span"),
+        mesg = document.createElement("span"),
+        code = null;
+    console.log(Object.keys(s));
+    if(postedids.indexOf(curv["date"]) >= 0) {
+      // have we posted this ID before? if so, don't
+      continue;
+    }
+    user.innerText = "<" + curv['user'] + "> "
+    user.style.fontWeight = 'bold';
+    console.log(user);
+    console.log(tmpl);
+    tmpl.appendChild(user);
+    mesg.innerText = curv['mesg'];
+    tmpl.appendChild(mesg);
+    if(curv['code'] !== undefined) {
+      code = document.createElement("pre");
+      code.innerText = curv["code"];
+      tmpl.appendChild(code);
+    }
+    chat.appendChild(tmpl);
+    postedids.push(curv["date"]);
+  }
+  //clearTimeout(curtimeout);
+  //setTimeout(updatewindow, 3000);
 }
 
-window.onload = function() { curtimeout = setTimeout(updatewindow, 3000) };
+window.onload = function() { curtimeout = setTimeout(updatewindow, 10000) };
     </script>
   </head>
   <body>
     <label for="user">Username: </label>
     <input type="text" name="user" id="user">
     <br>
-    <textarea rows=15 cols=125 name="chatwindow" id="chatwindow"></textarea>
     <label for="mesg">Message:</label>
     <br>
     <textarea rows=5 cols=125 name="mesg" id="mesg"></textarea>
@@ -58,5 +84,6 @@ window.onload = function() { curtimeout = setTimeout(updatewindow, 3000) };
     <textarea rows=5 cols=125 name="code" id="code"></textarea>
     <br>
     <button onclick="sendchat();">Chat</button>
+    <div style="border: 1px solid" name="chatwindow" id="chatwindow"></div>
   </body>
 </html>
