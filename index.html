@@ -48,10 +48,10 @@ function sendchat() {
 
 function recvchat(x) {
   console.log(Object.keys(x));
+  var chat = document.getElementById("chatwindow");
   for(var s in x['queue']){
     console.log(s);
-    var chat = document.getElementById("chatwindow"),
-        curv = x['queue'][s];
+    var curv = x['queue'][s];
         tmpl = document.createElement("div"),
         user = document.createElement("span"),
         mesg = document.createElement("span"),
@@ -76,8 +76,7 @@ function recvchat(x) {
     chat.appendChild(tmpl);
     postedids.push(curv["date"]);
   }
-  //clearTimeout(curtimeout);
-  //setTimeout(updatewindow, 3000);
+  chat.scrollTop = chat.scrollHeight;
 }
 
 window.onload = function() { curtimeout = setTimeout(updatewindow, 10000) };
