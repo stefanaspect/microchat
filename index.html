@@ -52,8 +52,10 @@ function sendchat() {
 
   if(user == '') {
     alert('username must not be blank!');
+    return false;
   } else if(mesg == '' && code == '') {
     alert('you must supply either a message, a code snippet, or both');
+    return false;
   }
   reqs.open('POST', "//" + location.host + '/message', true);
   reqs.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
