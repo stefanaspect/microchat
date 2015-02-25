@@ -3,13 +3,29 @@
     <title>MicroChat</title>
     <style>
 #chatwindow {
-  height: 450px;
-  max-height: 450px;
-  width: 650px;
-  max-width: 650px;
+  height: 80%;
+  width: 99%;
   overflow:auto;
   border: 1px solid; 
+  padding: 4px;
 }
+
+#container {
+  height: 100%;
+}
+
+#mesg, #code {
+  width: 100%;
+}
+
+#formtable {
+  width: 98%;
+}
+
+#formtable td {
+  width: 50%;
+}
+
     </style>
     <script language="javascript">
 "use strict;";
@@ -79,20 +95,41 @@ function recvchat(x) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+function keyCode(event) {
+    // submit chat if [ctrl|meta|shift|]+enter
+	if(event.keyCode == 13 && (event.shiftKey || event.ctrlKey || event.metaKey)) {
+  		event.preventDefault();		
+		sendchat();
+	}
+}
 window.onload = function() { curtimeout = setTimeout(updatewindow, 10000) };
     </script>
   </head>
   <body>
-    <label for="user">Username: </label>
-    <input type="text" name="user" id="user">
-    <br>
-    <label for="mesg">Message:</label>
-    <br>
-    <textarea rows=5 cols=125 name="mesg" id="mesg"></textarea>
-    <br>
-    <textarea rows=5 cols=125 name="code" id="code"></textarea>
-    <br>
-    <button onclick="sendchat();">Chat</button>
+	<div id="container">
     <div name="chatwindow" id="chatwindow"></div>
+    
+	<table id="formtable">
+	<tr>
+		<td>
+			<label for="user">Username: </label>
+    		<input type="text" name="user" id="user">
+			<button onclick="sendchat();" title="Alias: [ctrl|shift|meta]+enter">Chat</button>
+		</td>
+    </tr>
+	<tr>
+		<td>
+			<label for="mesg">Plaintext:</label>
+			<br />
+			<textarea rows=5 name="mesg" id="mesg" onkeydown="keyCode(event)"></textarea>
+		</td>
+    	<td>
+			<label for="code">Code:</label>
+			<br />
+			<textarea rows=5 name="code" id="code" onkeydown="keyCode(event)"></textarea>
+		</td>
+    </tr>
+	</table>
+	<div><!-- container -->
   </body>
 </html>
