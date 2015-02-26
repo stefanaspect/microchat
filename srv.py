@@ -3,6 +3,7 @@ import cgi
 import time
 
 queue = []
+who = []
 tmpl = None
 MAX = 10
 
@@ -33,5 +34,25 @@ def message():
     else:
         return {"queue": queue}
 
+@route('/who', method=['post'])
+def updateWho():
+	global who
+	data = request.json
+	user = data['user']
+	ts = time.time()
+	ip = request.remote_addr
+	who.append(dict(user=user, ts=ts, ip=ip))	
+	# Check timestamp from last update from user and purge.
+	for u in who:
+		lapse = time.time() - u['ts'] 
+		# print lapse, u
+		if lapse > 50:
+			who.remove(u)
+		else:
+			for uu in who:
+				if u != uu and u['user'] == uu['user'] and u['ip'] == uu['ip']:
+					who.remove(uu)
+	# print who
+	return {"who": who}
 
 run(host='0.0.0.0', port=8085)

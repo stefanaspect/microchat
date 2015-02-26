@@ -36,12 +36,46 @@ var queue = [],
     curtimeout = null,
     postedids = [];
 
+window.onbeforeunload = confirmLeave;
+
+function confirmLeave() {
+    return "Are you sure you want to leave this page?";
+}
+
 function updatewindow() {
+  updateMessages();
+  updateWho();
+  setTimeout(updatewindow, 10000);
+}
+
+function updateMessages() {
   var reqs = new XMLHttpRequest();
   reqs.open('GET', '//' + location.host + '/message', true);
   reqs.onreadystatechange = function() { if(reqs.readyState == 4) { recvchat(JSON.parse(reqs.responseText)); } };
   reqs.send(null);
-  setTimeout(updatewindow, 10000);
+}
+
+function updateWho() {
+  var user = document.getElementById('user').value;
+  var reqs = new XMLHttpRequest();
+
+  reqs.open('POST', "//" + location.host + '/who', true);
+  reqs.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  reqs.onreadystatechange = function() { 
+    if(reqs.readyState == 4) { 
+        who = JSON.parse(reqs.responseText);
+        console.log(who);
+        var userlist = document.getElementById("userlist");
+        userlist.innerText = "";
+        for (var u in who['who']) {
+            //console.log(u);
+            var user = who['who'][u];
+            userlist.innerText = userlist.innerText + user['user'] + ", ";
+            //console.log(user['user']);
+        }
+    }
+  };
+  reqs.send(JSON.stringify({'user': user}));
 }
 
 function sendchat() {
@@ -95,25 +129,21 @@ function recvchat(x) {
     }
     chat.appendChild(tmpl);
     postedids.push(curv["date"]);
-	beep();
-	beep();
-	beep();
-	beep();
-	beep();
+    beep();
   }
   chat.scrollTop = chat.scrollHeight;
 }
 
 function keyCode(event) {
     // submit chat if [ctrl|meta|shift|]+enter
-	if(event.keyCode == 13 && (event.shiftKey || event.ctrlKey || event.metaKey)) {
-  		event.preventDefault();		
-		sendchat();
-	}
+    if(event.keyCode == 13 && (event.shiftKey || event.ctrlKey || event.metaKey)) {
+        event.preventDefault();     
+        sendchat();
+    }
 }
 
 function beep() {
-	snd.volume = 0.2;
+    snd.volume = 0.2;
     snd.play();
 }
 
@@ -121,30 +151,33 @@ window.onload = function() { curtimeout = setTimeout(updatewindow, 10000) };
     </script>
   </head>
   <body>
-	<div id="container">
+    <div id="container">
     <div name="chatwindow" id="chatwindow"></div>
     
-	<table id="formtable">
-	<tr>
-		<td>
-			<label for="user">Username: </label>
-    		<input type="text" name="user" id="user">
-			<button onclick="sendchat();" title="Alias: [ctrl|shift|meta]+enter">Chat</button>
-		</td>
+    <table id="formtable">
+    <tr>
+        <td>
+            <label for="user">Username: </label>
+            <input type="text" name="user" id="user" value="anon" />
+            <button onclick="sendchat();" title="Alias: [ctrl|shift|meta]+enter">Chat</button>
+        </td>
+        <td>
+            Users: <span id="userlist"></span>
+        </td>
     </tr>
-	<tr>
-		<td>
-			<label for="mesg">Plaintext:</label>
-			<br />
-			<textarea rows=5 name="mesg" id="mesg" onkeydown="keyCode(event)"></textarea>
-		</td>
-    	<td>
-			<label for="code">Code:</label>
-			<br />
-			<textarea rows=5 name="code" id="code" onkeydown="keyCode(event)"></textarea>
-		</td>
+    <tr>
+        <td>
+            <label for="mesg">Plaintext:</label>
+            <br />
+            <textarea rows=5 name="mesg" id="mesg" onkeydown="keyCode(event)"></textarea>
+        </td>
+        <td>
+            <label for="code">Code:</label>
+            <br />
+            <textarea rows=5 name="code" id="code" onkeydown="keyCode(event)"></textarea>
+        </td>
     </tr>
-	</table>
-	<div><!-- container -->
+    </table>
+    <div><!-- container -->
   </body>
 </html>
